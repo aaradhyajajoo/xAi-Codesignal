@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
+import { apiCall } from '../utils/api';
 
-function LeadForm({ onLeadAdded }) {
+const LeadForm = ({ onLeadAdded }) => {
   const [formData, setFormData] = useState({
-    name: '', company: '', industry: '', budget: '', needs: ''
+    name: '',
+    company: '',
+    industry: '',
+    budget: '',
+    needs: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -10,9 +15,8 @@ function LeadForm({ onLeadAdded }) {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await fetch('/leads', {
+      await apiCall('/leads', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
       setFormData({ name: '', company: '', industry: '', budget: '', needs: '' });

@@ -1,20 +1,44 @@
-version: '3.8'
 services:
+  # Backend Service
   backend:
-    build: .
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sales-agent-backend
+    restart: unless-stopped
     ports:
       - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///leads.db}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
       - ./backend:/app
-    environment:
-      - GROK_API_KEY=${GROK_API_KEY}
+      - ./backend/leads.db:/app/leads.db
+    networks:
+      - sales-agent-network
+
+  # Frontend Service
   frontend:
-    image: node:18
-    working_dir: /app
-    volumes:
-      - ./frontend:/app
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sales-agent-frontend
+    restart: unless-stopped
     ports:
       - "3000:3000"
-    command: npm start
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
+    networks:
+      - sales-agent-network
+
+networks:
+  sales-agent-network:
+    driver: bridge

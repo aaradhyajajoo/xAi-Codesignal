@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { apiCall } from '../utils/api';
 
 function LeadList({ leads, onGenerateMessage, onUpdateLeadScore, onUpdateLeadMessage, onUpdateLeadStage }) {
   const [rescoreWeights, setRescoreWeights] = useState({});
@@ -26,17 +27,11 @@ function LeadList({ leads, onGenerateMessage, onUpdateLeadScore, onUpdateLeadMes
       setRescoreLoading({ ...rescoreLoading, [leadId]: true });
       console.log('Rescoring lead:', leadId, 'with weights:', weights);
       
-      const response = await fetch(`/leads/${leadId}/score`, {
+      const result = await apiCall(`/leads/${leadId}/score`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ weights: weights })
       });
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
       console.log('Rescore successful:', result);
       
       // Update the specific lead's score locally instead of reloading all data
@@ -57,18 +52,13 @@ function LeadList({ leads, onGenerateMessage, onUpdateLeadScore, onUpdateLeadMes
   const handleGenerateMessage = async (leadId) => {
     try {
       setMessageLoading({ ...messageLoading, [leadId]: true });
-      const response = await fetch(`/leads/${leadId}/message`, { method: 'POST' });
+      const result = await apiCall(`/leads/${leadId}/message`, { method: 'POST' });
       
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Message generated successfully:', result);
-        
-        // Update the specific lead's message locally instead of reloading all data
-        if (onUpdateLeadMessage && result.message) {
-          onUpdateLeadMessage(leadId, result.message);
-        }
-      } else {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      console.log('Message generated successfully:', result);
+      
+      // Update the specific lead's message locally instead of reloading all data
+      if (onUpdateLeadMessage && result.message) {
+        onUpdateLeadMessage(leadId, result.message);
       }
     } catch (error) {
       console.error('Error generating message:', error);
@@ -92,9 +82,8 @@ function LeadList({ leads, onGenerateMessage, onUpdateLeadScore, onUpdateLeadMes
       setInteractionLoading({ ...interactionLoading, [leadId]: true });
       console.log('Adding interaction for lead:', leadId, 'with data:', interaction);
       
-      const response = await fetch(`/add_interaction/${leadId}`, {
+      await apiCall(`/add_interaction/${leadId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: interaction.message,
           direction: interaction.direction,
@@ -102,12 +91,7 @@ function LeadList({ leads, onGenerateMessage, onUpdateLeadScore, onUpdateLeadMes
         })
       });
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      console.log('Interaction added successfully:', result);
+      console.log('Interaction added successfully');
       
       // Clear interaction data after successful submission
       setInteractionData({ ...interactionData, [leadId]: {} });

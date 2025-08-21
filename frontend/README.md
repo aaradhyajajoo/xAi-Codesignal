@@ -121,5 +121,3 @@ The UI is built with Tailwind CSS and can be easily customized:
 ## License
 
 This project is part of the Grok Sales Agent application.
-
-

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import LeadForm from './components/LeadForm';
 import LeadList from './components/LeadList';
 import MessageGenerator from './components/MessageGenerator';
+import { apiCall } from './utils/api';
 import './index.css';
 
 function App() {
@@ -18,21 +19,13 @@ function App() {
       console.log('Fetching leads from backend...');
       console.log('Search query:', search);
       
-      const url = search ? `/leads?search=${search}` : '/leads';
-      console.log('API URL:', url);
+      const endpoint = search ? `/leads?search=${search}` : '/leads';
+      console.log('API endpoint:', endpoint);
       
-      const response = await fetch(url);
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-    const data = await response.json();
+      const data = await apiCall(endpoint);
       console.log('Leads fetched successfully:', data);
       console.log('Number of leads:', data.length);
-    setLeads(data);
+      setLeads(data);
     } catch (error) {
       console.error('Error fetching leads:', error);
       setError(error.message);
